@@ -1,0 +1,453 @@
+.statusBox {
+    display: flex;
+    /* margin-bottom: 20px; */
+    flex-direction: row;
+    gap: 20px;
+    padding: 10px;
+}
+
+.statusArea {
+    padding: 10px;
+    border-radius: 12px;
+    background: #fff5f9;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+.playerDiv,
+.enemyDiv {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+}
+
+body {
+    background-image: url('img/background_image.png');
+    background-size: 100% 240%;
+    /* 縦横ともにぴったりにする */
+    background-repeat: no-repeat;
+    /* background-color: #f4f4f4; */
+    font-family: 'Kosugi Maru', sans-serif;
+    padding-top: 16px;
+    padding-left: 120px;
+    padding-right: 70px;
+    color: #3f51b5;
+}
+
+.mainPrecure {
+    display: flex;
+}
+
+#precureImg {
+    border-radius: 10px;
+    /* flex: 1; */
+    width: 58%;
+}
+
+#startMenu {
+    /* flex: 1; */
+    width: 46%;
+}
+
+h1 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 5px 5px 5px #87cefa, -5px -5px 5px #87cefa,
+        -5px 5px 5px #87cefa, 5px -5px 5px #87cefa,
+        5px 0 5px #87cefa, -5px 0 5px #87cefa,
+        0 5px 5px #87cefa, 0 -5px 5px #87cefa;
+    /* color: #87cefa; */
+    text-align: center;
+}
+
+#startMenu {
+    text-align: center;
+}
+
+button {
+    margin: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    background-color: #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    border: 1px solid #87cefa;
+}
+
+button:hover {
+    background-color: #87cefa;
+}
+
+#restartMenu {
+    text-align: center;
+}
+
+input {
+    margin: 1px;
+    padding: 0 0.5rem;
+    font-size: 0.875rem;
+    line-height: 2.3;
+    border-radius: 0.2rem;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.bar-fill.high {
+    background-color: #89c997;
+}
+
+.bar-fill.mid {
+    background-color: #FFCC80;
+}
+
+.bar-fill.low {
+    background-color: #F47C73;
+}
+
+.bar-fill {
+    border-radius: 5px;
+    text-align: center;
+    color: #ffffff;
+    line-height: 30px;
+    font-weight: bold;
+    transition: width 0.3s, background-color 0.3s;
+}
+
+.hp-bar {
+    /* margin-right: 600px; */
+    width: 90%;
+    max-width: 300px;
+    margin-right: 20px auto;
+    flex-grow: 1;
+    background-color: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+/* #playerDiv {
+    flex: 1;
+}
+
+#enemyDiv {
+    flex: 1;
+} */
+
+/* .statusBox {
+    margin-bottom: 10px;
+} */
+
+#sessionLogPanel,
+#instructionsPanel,
+#enemyListPanel,
+#characterListPanel {
+    text-align: left;
+}
+
+#instructionsPanel {
+    width: 84%;
+    max-width: 700px;
+    margin: 16px auto;
+    background-color: #fff;
+    border-left: 6px solid #88b5d3;
+    padding: 0 20px 26px 20px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    line-height: 1.4;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+#enemyListPanel {
+    width: 84%;
+    max-width: 700px;
+    margin: 16px auto;
+    background-color: #fff;
+    border-left: 6px solid #88b5d3;
+    padding: 0 20px 26px 20px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    line-height: 1.4;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+
+.logBox {
+    background-color: #ffffff;
+    width: 80%;
+    padding: 14px;
+    border: 1px solid #8da0b6;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+#sessionLogPanel h3 {
+    margin: 0;
+}
+
+#sessionLogPanel pre {
+    font-size: 14px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    padding: 14px 0 14px 30px;
+    border-left: 6px solid #8da0b6;
+    white-space: pre-wrap;
+    margin-bottom: 10px;
+    line-height: 2.0;
+}
+
+#characterSelect {
+    height: 30px;
+    margin: 1px;
+    font-size: 0.875rem;
+    line-height: 2.3;
+    border-radius: 0.2rem;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.containerGame {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+#gameUI {
+    /* flex: 1; */
+    width: 64%;
+}
+
+#logPanel {
+    /* flex: 1; */
+    width: 36%;
+}
+
+.playerStatus {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.enemyStatus {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#characterListPanel {
+    width: 84%;
+    max-width: 700px;
+    margin: 16px auto;
+    background-color: #fff;
+    border-left: 6px solid #88b5d3;
+    padding: 0 20px 26px 20px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    line-height: 1.4;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+#sessionLogPanel {
+    margin: 20px auto;
+    max-width: 600px;
+    border-radius: 10px;
+}
+
+/* セッションタイトル */
+.session-title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* h4とボタンの横並び */
+.log-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+/* 各ログ */
+.log-content {
+    background-color: #f4f4f4;
+    padding: 10px;
+    white-space: pre-wrap;
+    border-radius: 5px;
+    text-align: left;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* デフォルト（PC向け） */
+body {
+    font-size: 18px;
+    margin: 20px;
+}
+
+#main-container {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    align-items: center;
+}
+
+.character-panel {
+    width: 300px;
+}
+
+.character-panel img {
+    width: 100%;
+    height: auto;
+}
+
+/* スマホ向け（幅が768px以下の時） */
+@media screen and (max-width: 768px) {
+
+    /* 最初にリセット */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* スマホでちゃんと幅いっぱい使えるように */
+    html,
+    body {
+        width: 100%;
+        overflow-x: hidden;
+        margin: 0;
+    }
+
+    .mainPrecure,
+    #startMenu {
+        width: 100%;
+    }
+
+    #precureImg {
+        display: none !important;
+        /* position: absolute; left: -9999px; */
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    #gameUI,
+    #logPanel {
+        width: 100%;
+        /* ←こっちだけでいい */
+    }
+
+    body {
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    .character-panel {
+        width: 100%;
+    }
+
+    .character-panel img {
+        max-width: 100%;
+    }
+
+    button,
+    select,
+    input {
+        font-size: 16px;
+        width: 90%;
+    }
+
+    #instructionsPanel,
+    #enemyListPanel,
+    #characterListPanel {
+        width: 90%;
+        padding: 16px;
+    }
+
+    .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        /* 左右に配置 */
+        flex-wrap: wrap;
+        /* 画面が狭い時に折り返す */
+        gap: 10px;
+        margin-bottom: 5px;
+    }
+
+    .title-row h4 {
+        margin: 0;
+        font-size: 1.1em;
+    }
+
+    .title-row button {
+        font-size: 0.9em;
+        padding: 4px 10px;
+        cursor: pointer;
+    }
+
+    .log-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .containerGame {
+        flex-direction: column;
+        /* 縦並びに切り替え */
+    }
+
+    #gameUI,
+    #logPanel {
+        padding: 10px;
+        width: 100%;
+    }
+
+    #logPanel {
+        width: 120%;
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: left;
+    }
+
+    #gameUI {
+        text-align: left;
+    }
+
+    #gameUI button {
+        display: block;
+        width: 90%;
+        margin: 8px auto;
+    }
+
+    #logPanel {
+        margin: 0 30px 0 14px;
+    }
+
+    .logBox {
+        text-align: left;
+    }
+
+    #sessionLogPanel {
+        padding: 20px;
+    }
+
+    .special-button {
+        margin: 8px 0 8px 25px !important;
+        width: calc(90% - 25px);
+    }
+
+}
