@@ -1,3 +1,20 @@
+#characterSl {
+    font-size: 14px;
+    padding-bottom: 16px;
+}
+
+.select2-container {
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+}
+
+#titleImg {
+    height: 60px;
+    width: 140px;
+    padding-top: 20px;
+    vertical-align: middle;
+}
+
 .statusBox {
     display: flex;
     /* margin-bottom: 20px; */
@@ -21,6 +38,10 @@
     /* align-items: center; */
 }
 
+h4 {
+    margin: 16px;
+}
+
 body {
     background-image: url('img/background_image.png');
     background-size: 100% 240%;
@@ -39,6 +60,8 @@ body {
 }
 
 #precureImg {
+    height: 460px;
+    margin-top: 10px;
     border-radius: 10px;
     /* flex: 1; */
     width: 58%;
@@ -51,7 +74,7 @@ body {
 
 h1 {
     margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     color: #fff;
     text-shadow: 5px 5px 5px #87cefa, -5px -5px 5px #87cefa,
         -5px 5px 5px #87cefa, 5px -5px 5px #87cefa,
@@ -67,7 +90,7 @@ h1 {
 
 button {
     margin: 6px;
-    padding: 8px 16px;
+    padding: 6px 14px;
     cursor: pointer;
     background-color: #ddd;
     border-radius: 5px;
@@ -179,7 +202,7 @@ input {
 
 .logBox {
     background-color: #ffffff;
-    width: 80%;
+    width: 84%;
     padding: 14px;
     border: 1px solid #8da0b6;
     border-radius: 8px;
@@ -201,19 +224,6 @@ input {
     white-space: pre-wrap;
     margin-bottom: 10px;
     line-height: 2.0;
-}
-
-#characterSelect {
-    height: 30px;
-    margin: 1px;
-    font-size: 0.875rem;
-    line-height: 2.3;
-    border-radius: 0.2rem;
-    color: #495057;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #ced4da;
-    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
 .containerGame {
@@ -322,7 +332,7 @@ body {
         margin: 0;
         padding: 0;
     }
-    
+
     html,
     body {
         width: 100%;
@@ -335,23 +345,36 @@ body {
         width: 100%;
     }
 
+    /* #precureImg { */
+    /* display: none !important; */
+    /* position: absolute; left: -9999px; */
+    /* } */
+
     #precureImg {
-        display: none !important;
-        /* position: absolute; left: -9999px; */
+        width: 80%;
+        margin: 10px 40px 10px 40px;
+        height: 180px;
+    }
+
+    #titleImg {
+        height: 60px;
+        width: 86px;
+        /* padding-top: 20px;
+        vertical-align: middle; */
     }
 
     h1 {
-        font-size: 22px;
+        font-size: 16px;
     }
 
     #gameUI,
     #logPanel {
         width: 100%;
-        /* ←こっちだけでいい */
     }
 
     body {
-        font-size: 16px;
+        background-size: 100% 320%;
+        font-size: 14px;
         padding: 10px;
     }
 
@@ -363,11 +386,22 @@ body {
         max-width: 100%;
     }
 
-    button,
-    select,
+    select {
+        font-size: 10px;
+        width: 30%;
+    }
+
+    button {
+        margin: 0;
+        font-size: 10px;
+        width: 30%;
+        padding: 4px 4px;
+    }
+
     input {
-        font-size: 16px;
-        width: 90%;
+        line-height: 2.1;
+        font-size: 12px;
+        width: 30%;
     }
 
     #instructionsPanel,
@@ -449,4 +483,25 @@ body {
         width: calc(90% - 25px);
     }
 
+    .startName {
+        margin: 0 10px 0 80px;
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+    }
+
+    #playerInput {
+        /* flex: 1; */
+        width: 40%;
+    }
+
+    #startGame {
+        /* flex: 1; */
+        width: 30%;
+    }
+
+    .mainPrecure {
+        flex-direction: column;
+    }
 }

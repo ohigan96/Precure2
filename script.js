@@ -75,16 +75,18 @@ function startGame() {
     isPlayerTurn = players.includes(turnOrder[0]);
 }
 
+// 敵生成
 function generateEnemies(n) {
     const types = ["カバトン", "バッタモンダー", "ミノトン", "カイゼリン", "スキアヘッド", "カイザー"];
     const shuffled = types.sort(() => Math.random() - 0.5);
     return shuffled.slice(0, n).map(name => getEnemyTemplate(name));
 }
 
+// キャラクター生成
 function getCharacterStatus(type, name) {
     const map = {
         sky: [150, 50], prism: [90, 25], wing: [100, 45],
-        butterfly: [110, 30], majesty: [100, 65],
+        butterfly: [110, 30], majesty: [120, 65],
         elle: [60, 25], shalala: [300, 100]
     };
     const charNameMap = {
@@ -111,7 +113,7 @@ function getCharacterStatus(type, name) {
 
 function getEnemyTemplate(sel) {
     const map = {
-        カバトン: [60, 30], バッタモンダー: [100, 20], ミノトン: [130, 45],
+        カバトン: [80, 30], バッタモンダー: [100, 20], ミノトン: [130, 45],
         カイゼリン: [90, 35], スキアヘッド: [250, 50], カイザー: [800, 80]
     };
     const [hp, att] = map[sel];
@@ -127,62 +129,6 @@ function log(msg) {
     battleLogLive.push(msg);
 }
 
-// function updateDisplay() {
-//     const charNameMap = {
-//         sky: "キュアスカイ",
-//         prism: "キュアプリズム",
-//         wing: "キュアウイング",
-//         butterfly: "キュアバタフライ",
-//         majesty: "キュアマジェスティ",
-//         elle: "エルちゃん",
-//         shalala: "シャララ隊長"
-//     };
-
-//     // プレイヤー側表示更新
-//     const statusArea = document.querySelector(".statusArea");
-//     statusArea.innerHTML = ""; // リセット
-
-//     players.forEach((pl, i) => {
-//         const div = document.createElement("div");
-//         div.classList.add("statusBox");
-
-//         const charName = charNameMap[pl.type] || "？？？";
-//         const displayName = `${charName}`;
-
-//         div.innerHTML = `
-//         <div id = "playerDiv">
-//       <p>${displayName} HP: <span id="playerHP${i}">${pl.hp}</span></p>
-//       <div class="playerStatus">
-//         <img src="img/${pl.type}.png" width="100" height="120">
-//         <div class="hp-bar">
-//           <div id="playerHPBar${i}" class="bar-fill high" style="width:100%">100%</div>
-//         </div>
-//       </div>
-//       </div>`;
-//         statusArea.appendChild(div);
-
-//         updateBar(pl, `playerHPBar${i}`, `playerHP${i}`);
-//     });
-
-//     // 敵表示
-//     enemies.forEach((en, i) => {
-//         const div = document.createElement("div");
-//         div.classList.add("statusBox");
-//         div.innerHTML = `
-//         <div id ="enemyDiv">
-//         <p>${en.name} (敵) HP: <span id="enemyHP${i}">${en.hp}</span></p>
-//         <div class="enemyStatus">
-//         <div class="hp-bar">
-//           <div id="enemyHPBar${i}" class="bar-fill high" style="width:100%">100%</div>
-//         </div>
-//         <img src="img/${en.name}.png" width="100" height="110">
-//         </div>
-//         </div>`;
-//         statusArea.appendChild(div);
-//         updateBar(en, `enemyHPBar${i}`, `enemyHP${i}`);
-//     });
-// }
-
 function updateDisplay() {
     const statusArea = document.querySelector(".statusArea");
     statusArea.innerHTML = ""; // リセット
@@ -196,7 +142,6 @@ function updateDisplay() {
         elle: "エルちゃん",
         shalala: "シャララ隊長"
     };
-
     const maxLen = Math.max(players.length, enemies.length);
 
     for (let i = 0; i < maxLen; i++) {
@@ -241,6 +186,7 @@ function updateDisplay() {
         if (pl) updateBar(pl, `playerHPBar${i}`, `playerHP${i}`);
         if (en) updateBar(en, `enemyHPBar${i}`, `enemyHP${i}`);
     }
+    updateSpecialButtonsState();
 }
 
 function updateBar(ent, barId, textId) {
@@ -282,7 +228,6 @@ function playerAttack() {
 
     updateDisplay();
     checkEnd();
-
     isPlayerTurn = false;
     nextTurn();
 }
@@ -293,11 +238,17 @@ function enemyAttack(attacker) {
     if (targets.length === 0) return;
 
     const target = targets[Math.floor(Math.random() * targets.length)];
-    let dmg = Math.floor(Math.random() * (attacker.attack - 4)) + 5;
+
+    // 最低ダメージ15、最大ダメージattacker.attack
+    const minDmg = 15;
+    const maxDmg = attacker.attack;
+    let dmg = Math.floor(Math.random() * (maxDmg - minDmg + 1)) + minDmg;
+
     if (Math.random() < 0.1) {
         dmg = Math.floor(dmg * 1.8);
         log(`⚠️ ${target.name} に ${attacker.name} の痛恨の一撃！`);
     }
+
     target.hp = Math.max(0, target.hp - dmg);
     log(`${attacker.name} の攻撃 → ${target.name} に ${dmg} ダメージ！`);
 
@@ -345,7 +296,8 @@ function defendAction() {
     // 全プレイヤー防御フラグ ON
     players.forEach(p => p.defending = true);
     log("全員が防御態勢！");
-    setTimeout(playerAttack, 600);
+    isPlayerTurn = false;
+    nextTurn();
 }
 
 function usePotion() {
@@ -354,24 +306,53 @@ function usePotion() {
             p.hp = Math.min(p.maxHP, p.hp + 25);
             p.potionUsed = true;
             log(`${p.name} はポーション使用！ HPが25増えた！`);
+            document.getElementById("potionButton").disabled = true;
         }
     });
-    setTimeout(playerAttack, 600);
+    // setTimeout(playerAttack, 600);
     updateDisplay();
+    // プレイヤーのターンを終了し、次のターンへ
+    isPlayerTurn = false;
+    nextTurn();
 }
 
 function setupSpecialButtons(types) {
-    document.querySelectorAll(".special-button").forEach(btn => btn.style.display = "none");
+    document.querySelectorAll(".special-button").forEach(btn => {
+        btn.style.display = "none";
+        btn.disabled = true;
+    });
     types.forEach(t => {
         const btn = document.getElementById(`${t}-special`);
-        if (btn) btn.style.display = "inline-block";
+        if (btn) {
+            btn.style.display = "inline-block";
+            btn.disabled = false;
+        }
     });
 }
 
 function playerSkill(ev) {
-    if (!isPlayerTurn || gameEnded) return;
-    const attacker = turnOrder[currentTurnIndex];
-    if (!attacker || attacker.hp <= 0) return;
+    if (gameEnded) return;
+
+    const btnId = ev.target.id; // 例: "sky-special"
+    const characterType = btnId.replace("-special", "");
+
+    // プレイヤーの中から、そのtypeのキャラを探す
+    const attacker = players.find(p => p.type === characterType && p.hp > 0);
+
+    if (!attacker) {
+        log(`⚠️ そのキャラクターは使用できません（HP 0 または未参加）。`);
+        return;
+    }
+
+    // 必殺技を撃つキャラをターンキャラに強制指定
+    const attackerIndex = turnOrder.findIndex(p => p === attacker);
+    if (attackerIndex === -1) {
+        log(`⚠️ ${attacker.name} はこのターンでは行動できません`);
+        return;
+    }
+
+    currentTurnIndex = attackerIndex;
+    isPlayerTurn = true;
 
     const targetEnemies = [...enemies.filter(e => e.hp > 0)];
     if (targetEnemies.length === 0) return;
@@ -399,6 +380,15 @@ function playerSkill(ev) {
 document.querySelectorAll(".special-button").forEach(btn => {
     btn.addEventListener("click", playerSkill);
 });
+
+function updateSpecialButtonsState() {
+    players.forEach(p => {
+        const btn = document.getElementById(`${p.type}-special`);
+        if (btn) {
+            btn.disabled = p.hp <= 0;
+        }
+    });
+}
 
 // 終了チェック
 function checkEnd() {
@@ -478,11 +468,12 @@ function restartGame() {
     // 戦闘ログを空にする
     battleLogLive = [];
     document.getElementById("battleLog").value = "";
-    document.getElementById("characterSelect").value = "";
+    // Select2 の選択状態を解除
+    $('#characterSelect').val(null).trigger('change');
+
     showSection(["startMenu", "precureImg"]);
     document.getElementById("potionButton").disabled = false;
     players.forEach(p => p.potionUsed = false);
-
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -496,10 +487,19 @@ function setupInputEnterKey() {
 }
 
 function getAttackDamage(base) {
-    const crit = Math.random() < 0.1;
-    let dmg = Math.floor(Math.random() * (base - 4)) + 5;
-    if (crit) { dmg = Math.floor(dmg * 1.8); log("⚡ 会心の一撃！"); }
-    return dmg;
+    const crit = Math.random() < 0.05;
+    let min = 15;
+    let max = base;
+
+    if (base < min) {
+        min = base;
+    }
+
+    const dmg = Math.floor(Math.random() * (max - min + 1)) + min;
+    const finalDmg = crit ? Math.floor(dmg * 1.8) : dmg;
+
+    if (crit) log("⚡ 会心の一撃！");
+    return finalDmg;
 }
 
 // ログ保存
@@ -519,7 +519,6 @@ function downloadSessionLog() {
     // 使用後のURLオブジェクトを解放
     URL.revokeObjectURL(url);
 }
-
 
 // 操作説明の表示・非表示をトグルする関数
 function showInstructions() {
@@ -609,7 +608,6 @@ HP: 1000 / 攻撃力: 100
 
 それぞれ異なる戦術が求められるよ！
 `;
-
     // テキスト内容をパネルに表示
     panel.textContent = enemyInfo;
     panel.style.display = "block";
@@ -678,3 +676,22 @@ HP: 300 / 攻撃力: 100
     // 表示パネル切り替え
     showSection(["startMenu", "characterListPanel", "precureImg"]);
 }
+
+$(document).ready(function () {
+    $('#characterSelect').select2({
+        placeholder: "好きなキャラを選んでね！",
+        allowClear: true,
+        closeOnSelect: false,
+        tags: false
+    });
+
+    $('#characterSelect').on('select2:select', function () {
+        setTimeout(() => {
+            const selected = $(this).val();
+            if (selected && selected.length > 2) {
+                $(this).val(selected.slice(0, 2)).trigger('change');
+                alert('選択できるのは2人までです！');
+            }
+        }, 0);
+    });
+});

@@ -7,41 +7,45 @@
     <script src="https://unpkg.com/multiple-select@1.5.2/dist/multiple-select.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/multiple-select@1.5.2/dist/multiple-select.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
     <title>プリキュアバトルシミュレーター</title>
 </head>
 
 <body>
-    <h1 class="h1"><img src="img/hiropuri.png" alt="タイトル画像"
-            style="height: 80px; width: 150px; padding-top: 20px; vertical-align: middle;" />プリキュアバトルシミュレーター</h1>
+    <h1 class="h1"><img id="titleImg" src="img/hiropuri.png" alt="タイトル画像" />プリキュアバトルシミュレーター</h1>
     <div class="mainPrecure">
-        <img id="precureImg" src="img/precure.jpg" alt="プリキュア画像" style="display: block; height: 460px;">
+        <img id="precureImg" src="img/precure.jpg" alt="プリキュア画像" style="display: block;">
         <div id="startMenu" style="display: block;">
-            <input type="text" id="playerInput" placeholder="あなたの名前を入力" />
-            <button onclick="startGame()">ゲーム開始</button>
-            <br>
-            <br>
-            <label for="characterSelect">キャラクターを選んでね：</label>
-            <select multiple="multiple" id="characterSelect">
-                <option value="">選択してね</option>
-                <option value="sky">キュアスカイ</option>
-                <option value="prism">キュアプリズム</option>
-                <option value="wing">キュアウイング</option>
-                <option value="butterfly">キュアバタフライ</option>
-                <option value="majesty">キュアマジェスティ</option>
-                <option value="elle">エルちゃん</option>
-                <option value="shalala">シャララ隊長</option>
-            </select>
-            <br>
-            <br>
-            <button onclick="showInstructions()">操作方法を見る</button>
-            <button onclick="showEnemyList()">敵一覧を見る</button>
-            <button onclick="showCharacterList()">キャラクター一覧を見る</button>
+            <div class="startName">
+                <input type="text" id="playerInput" placeholder="あなたの名前を入力" />
+                <button onclick="startGame()" id="startGame">ゲーム開始</button>
+            </div>
 
+            <div class="selectContainer">
+                <div class="selectChar">
+                    <label for="characterSelect" id="characterSl">キャラ選択</label>
+                    <select multiple="multiple" id="characterSelect" style="width: 40%; height: 50PX;">
+                        <option value="sky">キュアスカイ</option>
+                        <option value="prism">キュアプリズム</option>
+                        <option value="wing">キュアウイング</option>
+                        <option value="butterfly">キュアバタフライ</option>
+                        <option value="majesty">キュアマジェスティ</option>
+                        <option value="elle">エルちゃん</option>
+                        <option value="shalala">シャララ隊長</option>
+                    </select>
+                </div>
+                <div class="btnShow">
+                    <button onclick="showInstructions()">操作方法を見る</button>
+                    <button onclick="showEnemyList()">敵一覧を見る</button>
+                    <button onclick="showCharacterList()">キャラクター一覧を見る</button>
+                </div>
+            </div>
             <div id="instructionsPanel" style="display: none;"></div>
             <div id="enemyListPanel" style="display: none;"></div>
             <div id="characterListPanel" style="display: none;"></div>
+
         </div>
     </div>
 
@@ -50,7 +54,7 @@
             <p><span id="playerNameLabel"></span>のキャラクター：<span id="charClassLabel">---</span></p>
 
             <div class="statusArea">
-                
+
                 <div class="statusBox" id="playerStatusContainer">
 
                     <div class="playerStatus">
@@ -76,13 +80,13 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- プレイヤーが選択 -->
             <div id="commandButtons">
                 <button onclick="playerAttack()">攻撃する</button>
                 <button onclick="defendAction()">防御する</button>
                 <button id="potionButton" onclick="usePotion()">ポーション</button>
-            
+
                 <button id="sky-special" class="special-button">必殺技：ヒーローガールスカイパンチ</button>
                 <button id="prism-special" class="special-button">必殺技：ヒーローガールプリズムショット</button>
                 <button id="wing-special" class="special-button">必殺技：ひろがるウイングアタック</button>
@@ -113,6 +117,8 @@
 
     <div id="characterListPanel" style="display: none;">
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="script.js"></script>
 </body>
 
