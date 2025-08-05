@@ -5,14 +5,14 @@ let enemies = [];
 let battleLogLive = [];
 let sessionLogs = [];
 
-let turnOrder = [];
-let currentTurnIndex = 0;
+// let turnOrder = [];
+// let currentTurnIndex = 0;
 let isPlayerTurn = true;
 let gameEnded = false;
 
 console.log(document.getElementById("playerNameLabel"));
 
-// キャラ選択時の表示切り替えは HTML の設定（multiple）
+// キャラ選択時の表示切り替え
 function showSection(sectionIds) {
     const all = ["startMenu", "gameUI", "logPanel", "sessionLogPanel", "restartMenu", "instructionsPanel", "enemyListPanel", "characterListPanel", "precureImg"];
     all.forEach(id => {
@@ -68,11 +68,11 @@ function startGame() {
             .map(o => nameMap[o.value] || "？？？")
             .join(" & ");
     }
-    setupSpecialButtons(opts.map(o => o.value));
+    // setupSpecialButtons(opts.map(o => o.value));
 
     gameEnded = false;
-    setupTurnOrder();
-    isPlayerTurn = players.includes(turnOrder[0]);
+    // setupTurnOrder();
+    // isPlayerTurn = players.includes(turnOrder[0]);
 }
 
 // 敵生成
@@ -157,10 +157,13 @@ function updateDisplay() {
             playerDiv.innerHTML = `
         <p>${charName} HP: <span id="playerHP${i}">${pl.hp}</span></p>
         <div class="playerStatus">
-          <img src="img/${pl.type}.png" width="80" height="80">
-          <div class="hp-bar">
-            <div id="playerHPBar${i}" class="bar-fill high" style="width:100%">100%</div>
-          </div>
+            <div class="charContainer">
+                <img src="img/${pl.type}.png" width="80" height="80" id="charImg">
+                <div id="effectPlayer${i}" class="effect"></div>
+            </div>
+            <div class="hp-bar">
+                <div id="playerHPBar${i}" class="bar-fill high" style="width:100%">100%</div>
+            </div>
         </div>`;
         }
 
@@ -172,13 +175,15 @@ function updateDisplay() {
             enemyDiv.innerHTML = `
         <p>${en.name} (敵) HP: <span id="enemyHP${i}">${en.hp}</span></p>
         <div class="enemyStatus">
-          <div class="hp-bar">
+          <div class="hp-barEnemy">
             <div id="enemyHPBar${i}" class="bar-fill high" style="width:100%">100%</div>
           </div>
-          <img src="img/${en.name}.png" width="80" height="80">
+          <div class="charContainer">
+            <div id="effectEnemy${i}" class="effect"></div>
+            <img src="img/${en.name}.png" width="80" height="80" id="enemyImg">
+          </div>
         </div>`;
         }
-
         statusBox.appendChild(playerDiv);
         statusBox.appendChild(enemyDiv);
         statusArea.appendChild(statusBox);
@@ -186,8 +191,9 @@ function updateDisplay() {
         if (pl) updateBar(pl, `playerHPBar${i}`, `playerHP${i}`);
         if (en) updateBar(en, `enemyHPBar${i}`, `enemyHP${i}`);
     }
-    updateSpecialButtonsState();
+    checkComboSelection();
 }
+
 
 function updateBar(ent, barId, textId) {
     const percent = Math.floor(ent.hp / ent.maxHP * 100);
@@ -201,103 +207,154 @@ function updateBar(ent, barId, textId) {
     document.getElementById(textId).textContent = ent.hp;
 }
 
-function shuffleTurnOrder() {
-    return [...players, ...enemies].sort(() => Math.random() - 0.5);
-}
-
-// プレイヤー攻撃ボタンから呼ばれる
-function playerAttack() {
-    if (!isPlayerTurn || gameEnded) return;
-
-    const attacker = turnOrder[currentTurnIndex];
-    if (!attacker || attacker.hp <= 0) return;
-
-    const targets = enemies.filter(e => e.hp > 0);
-    if (targets.length === 0) return;
-
-    const target = targets[Math.floor(Math.random() * targets.length)];
-    const hitChance = Math.random();
-
-    if (hitChance < 0.2) {
-        log(`${attacker.name} の攻撃 → ${target.name} はかわした！`);
-    } else {
-        const dmg = getAttackDamage(attacker.attack);
-        target.hp = Math.max(0, target.hp - dmg);
-        log(`${attacker.name} の攻撃 → ${target.name} に ${dmg} ダメージ！`);
-    }
-
-    updateDisplay();
-    checkEnd();
-    isPlayerTurn = false;
-    nextTurn();
-}
-
-// 敵の攻撃（自動）
-function enemyAttack(attacker) {
-    const targets = players.filter(p => p.hp > 0);
-    if (targets.length === 0) return;
-
-    const target = targets[Math.floor(Math.random() * targets.length)];
-
-    // 最低ダメージ15、最大ダメージattacker.attack
-    const minDmg = 15;
-    const maxDmg = attacker.attack;
-    let dmg = Math.floor(Math.random() * (maxDmg - minDmg + 1)) + minDmg;
-
-    if (Math.random() < 0.1) {
-        dmg = Math.floor(dmg * 1.8);
-        log(`⚠️ ${target.name} に ${attacker.name} の痛恨の一撃！`);
-    }
-
-    target.hp = Math.max(0, target.hp - dmg);
-    log(`${attacker.name} の攻撃 → ${target.name} に ${dmg} ダメージ！`);
-
-    updateDisplay();
-    checkEnd();
-}
-
-// 1体ずつターン処理
-function nextTurn() {
-    if (gameEnded) return;
-
-    currentTurnIndex++;
-    if (currentTurnIndex >= turnOrder.length) {
-        setupTurnOrder();
-    }
-
-    const nextEntity = turnOrder[currentTurnIndex];
-    if (!nextEntity || nextEntity.hp <= 0) {
-        nextTurn(); // 死亡キャラスキップ
+function attackEntity(attacker, target, callback) {
+    if (!attacker || !target) {
+        if (callback) callback();
         return;
     }
 
-    if (players.includes(nextEntity)) {
-        isPlayerTurn = true;
-    } else {
-        isPlayerTurn = false;
+    let isCritical = Math.random() < 0.1;
+    let isMiss = Math.random() < 0.2;
+
+    if (isMiss) {
+        log(`${attacker.name} の攻撃 → ${target.name} はかわした！`);
         setTimeout(() => {
-            enemyAttack(nextEntity);
-            nextTurn();
-        }, 700);
+            if (callback) callback();
+        }, 800);
+        return;
+    }
+
+    // 命中した場合の処理だけ下に書く
+    let dmg = Math.floor(Math.random() * (attacker.attack - 15 + 1)) + 15;
+    let critLabel = '';
+
+    if (isCritical) {
+        dmg = Math.floor(dmg * 1.8);
+        critLabel = players.includes(attacker) ? '会心の一撃！' : '痛恨の一撃！';
+        log(`⚠️ ${attacker.name} の ${critLabel} → ${target.name} に ${dmg} ダメージ！`);
+    } else {
+        log(`${attacker.name} の攻撃 → ${target.name} に ${dmg} ダメージ！`);
+    }
+
+    target.hp = Math.max(0, target.hp - dmg);
+
+    const group = players.includes(target) ? players : enemies;
+    const effectId = players.includes(target)
+        ? `effectPlayer${group.indexOf(target)}`
+        : `effectEnemy${group.indexOf(target)}`;
+    const effect = document.getElementById(effectId);
+
+    if (effect) {
+        effect.innerHTML = `<img src="img/lighting.gif" alt="エフェクト" width="94" height="94"/>`;
+        setTimeout(() => {
+            effect.innerHTML = "";
+            setTimeout(() => {
+                if (callback) callback();
+            }, 300);
+        }, 1000);
+    } else {
+        setTimeout(() => {
+            if (callback) callback();
+        }, 500);
     }
 }
 
-// 攻撃順シャッフル
-function setupTurnOrder() {
-    const alivePlayers = players.filter(p => p.hp > 0);
-    const aliveEnemies = enemies.filter(e => e.hp > 0);
-    const others = [...alivePlayers.slice(1), ...aliveEnemies].sort(() => Math.random() - 0.5);
-    turnOrder = [alivePlayers[0], ...others];
-    currentTurnIndex = 0;
-    isPlayerTurn = true;
+let lastAttackerSide = null;      // 前回の攻撃者（"player" or "enemy"）
+let consecutiveCount = 0;         // 同じ側が続いた回数
+
+function playerAttack() {
+    if (gameEnded) return;
+
+    const isPlayerFirst = Math.random() < 0.5;
+
+    const firstAttacker = isPlayerFirst ? getRandomAlive(players) : getRandomAlive(enemies);
+    const firstDefender = isPlayerFirst ? getRandomAlive(enemies) : getRandomAlive(players);
+
+    const secondAttacker = isPlayerFirst ? getRandomAlive(enemies) : getRandomAlive(players);
+    const secondDefender = isPlayerFirst ? getRandomAlive(players) : getRandomAlive(enemies);
+
+    if (!firstAttacker || !firstDefender || !secondAttacker || !secondDefender) return;
+
+    isPlayerTurn = players.includes(firstAttacker);
+
+    // 最初の攻撃
+    attackEntity(firstAttacker, firstDefender, () => {
+        updateDisplay();
+        checkEnd();
+
+        // 続いて反撃
+        attackEntity(secondAttacker, secondDefender, () => {
+            updateDisplay();
+            checkEnd();
+        });
+    });
+}
+
+function getRandomAlive(list) {
+    const alive = list.filter(c => c.hp > 0);
+    if (alive.length === 0) return null;
+    const index = Math.floor(Math.random() * alive.length);
+    return alive[index];
 }
 
 function defendAction() {
-    // 全プレイヤー防御フラグ ON
-    players.forEach(p => p.defending = true);
-    log("全員が防御態勢！");
-    isPlayerTurn = false;
-    nextTurn();
+    if (gameEnded) return;
+
+    // ランダムに防御するプレイヤーを1体選択
+    const defender = getRandomAlive(players);
+    if (!defender) return;
+
+    defender.defending = true;
+    log(`🛡️ ${defender.name} は防御態勢に入った！`);
+
+    // 敵の攻撃（ランダムな敵が防御中のプレイヤーを攻撃）
+    const attacker = getRandomAlive(enemies);
+    if (!attacker) return;
+
+    // 攻撃処理
+    if (defender.defending) {
+        if (Math.random() < 0.3) {
+            // 防御成功 → 回復
+            const min = Math.floor(defender.maxHP * 0.15);
+            const max = Math.floor(defender.maxHP * 0.25);
+            const healAmount = Math.floor(Math.random() * (max - min + 1)) + min;
+            defender.hp = Math.min(defender.hp + healAmount, defender.maxHP);
+
+            log(`✨ 防御成功！${defender.name} のHPが ${healAmount} 回復！`);
+        } else {
+            // 防御失敗 → ダメージ＆エフェクト表示
+            const damage = Math.floor(getAttackDamageEnemy(attacker.attack) / 2);
+            defender.hp = Math.max(0, defender.hp - damage);
+            log(`⚔️ ${attacker.name} の攻撃 → ${defender.name} に ${damage} ダメージ！（防御で半減）`);
+
+            // 攻撃エフェクト表示
+            const effectId = `effectPlayer${players.indexOf(defender)}`;
+            const effect = document.getElementById(effectId);
+            if (effect) {
+                effect.innerHTML = `<img src="img/lighting.gif" alt="エフェクト" width="90" height="90"/>`;
+                setTimeout(() => {
+                    effect.innerHTML = "";
+                    defender.defending = false;
+                    updateDisplay();
+                    checkEnd();
+                }, 1200);
+                return;
+            }
+        }
+
+        // エフェクトがない・防御成功時の後処理
+        defender.defending = false;
+        setTimeout(() => {
+            updateDisplay();
+            checkEnd();
+        }, 800);
+    }
+}
+
+function getAttackDamageEnemy(attackValue) {
+    const min = 15;
+    const max = attackValue;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function usePotion() {
@@ -313,82 +370,179 @@ function usePotion() {
     updateDisplay();
     // プレイヤーのターンを終了し、次のターンへ
     isPlayerTurn = false;
-    nextTurn();
 }
 
-function setupSpecialButtons(types) {
-    document.querySelectorAll(".special-button").forEach(btn => {
-        btn.style.display = "none";
-        btn.disabled = true;
-    });
-    types.forEach(t => {
-        const btn = document.getElementById(`${t}-special`);
-        if (btn) {
-            btn.style.display = "inline-block";
-            btn.disabled = false;
+function checkComboSelection() {
+    const select = document.getElementById("characterSelect");
+    const selectedTypes = Array.from(select.selectedOptions).map(opt => opt.value);
+
+    const showSkyPrism = selectedTypes.includes("sky") && selectedTypes.includes("prism");
+    const showWingButterfly = selectedTypes.includes("wing") && selectedTypes.includes("butterfly");
+
+    document.getElementById("combo-sky-prism").style.display = showSkyPrism ? "inline-block" : "none";
+    document.getElementById("combo-wing-butterfly").style.display = showWingButterfly ? "inline-block" : "none";
+}
+
+// function skyPrismCombo() {
+//     const lines = [
+//         "💙 スカイブルー！",
+//         "🤍 プリズムホワイト！",
+//         "🌟 プリキュア・アップドラフト・シャイニング！！！"
+//     ];
+
+//     let idx = 0;
+
+//     function showNextLine() {
+//         if (idx < lines.length) {
+//             log(lines[idx]);
+//             idx++;
+//             setTimeout(showNextLine, 1000);
+//         } else {
+//             showFlashEffect(); // フラッシュ演出
+//             setTimeout(() => {
+//                 triggerComboSkill("sky_prism");
+//             }, 2000);
+//         }
+//     }
+
+//     showNextLine();
+// }
+
+// const lines = [
+//     "🎨 全ての色を1つに！ミックスパレット！",
+//     "🔴🟡🔵⚪ レッド！イエロー！ブルー！ホワイト！",
+//     "✨ まぜまぜカラーチャージ！"
+// ];
+
+// // セリフ表示
+// function showComboSequence(callback) {
+//     let idx = 0;
+
+//     function showNextLine() {
+//         if (idx < lines.length) {
+//             log(lines[idx]);
+//             idx++;
+//             setTimeout(showNextLine, 1000); // 1秒ごとに表示
+//         } else {
+//             callback(); // 全セリフ表示後に技発動
+//         }
+//     }
+//     showNextLine();
+// }
+
+function playComboSequence(lines, skillName) {
+    let idx = 0;
+
+    function showNextLine() {
+        if (idx < lines.length) {
+            log(lines[idx]);
+            idx++;
+            setTimeout(showNextLine, 1000);
+        } else {
+            showFlashEffect(); // 共通演出
+            setTimeout(() => {
+                triggerComboSkill(skillName);
+            }, 1000);
         }
-    });
+    }
+
+    showNextLine();
 }
 
-function playerSkill(ev) {
+// スカイプリズムの演出
+const skyPrismLines = [
+    "💙 スカイブルー！",
+    "🤍 プリズムホワイト！"
+];
+function skyPrismCombo() {
+    playComboSequence(skyPrismLines, "sky_prism");
+}
+
+// ミックスパレットの演出
+const wingButterflyLines = [
+    "🎨 全ての色を1つに！ミックスパレット！",
+    "🔴🟡🔵⚪ レッド！イエロー！ブルー！ホワイト！",
+    "✨ まぜまぜカラーチャージ！"
+];
+function wingButterflyCombo() {
+    playComboSequence(wingButterflyLines, "wing_butterfly");
+}
+
+
+// 合体技発動
+function triggerComboSkill(pairName) {
     if (gameEnded) return;
 
-    const btnId = ev.target.id; // 例: "sky-special"
-    const characterType = btnId.replace("-special", "");
+    const combos = {
+        "sky_prism": {
+            members: ["sky", "prism"],
+            skillName: "プリキュア・アップドラフト・シャイニング",
+            damage: () => Math.floor(Math.random() * 31) + 150, // 150〜180
+        },
+        "wing_butterfly": {
+            members: ["wing", "butterfly"],
+            skillName: "プリキュア・タイタニック・レインボー",
+            damage: () => Math.floor(Math.random() * 31) + 150,
+        }
+    };
 
-    // プレイヤーの中から、そのtypeのキャラを探す
-    const attacker = players.find(p => p.type === characterType && p.hp > 0);
+    const combo = combos[pairName];
+    if (!combo) return;
 
-    if (!attacker) {
-        log(`⚠️ そのキャラクターは使用できません（HP 0 または未参加）。`);
+    const activeMembers = combo.members.map(type => players.find(p => p.type === type && p.hp > 0));
+    if (activeMembers.includes(undefined)) {
+        log(`⚠️ 合体メンバーのどちらかが使用不能です！`);
         return;
     }
 
-    // 必殺技を撃つキャラをターンキャラに強制指定
-    const attackerIndex = turnOrder.findIndex(p => p === attacker);
-    if (attackerIndex === -1) {
-        log(`⚠️ ${attacker.name} はこのターンでは行動できません`);
-        return;
-    }
+    const enemiesAlive = enemies.filter(e => e.hp > 0);
+    if (enemiesAlive.length === 0) return;
 
-    currentTurnIndex = attackerIndex;
-    isPlayerTurn = true;
+    log(`🌈✨ ${combo.skillName} ！！`);
 
-    const targetEnemies = [...enemies.filter(e => e.hp > 0)];
-    if (targetEnemies.length === 0) return;
-
-    const skillType = Math.random() < 0.7 ? "single" : "multi";
-    if (skillType === "single") {
-        const target = targetEnemies[Math.floor(Math.random() * targetEnemies.length)];
-        const dmg = Math.floor(Math.random() * 51) + 100;
-        target.hp = Math.max(0, target.hp - dmg);
-        log(`🌟 ${attacker.name} の必殺技！ → ${target.name} に ${dmg} ダメージ！`);
-    } else {
-        targetEnemies.forEach(en => {
-            const dmg = Math.floor(Math.random() * 31) + 100;
-            en.hp = Math.max(0, en.hp - dmg);
-            log(`🌟 ${attacker.name} の必殺技！ → ${en.name} に ${dmg} ダメージ！`);
-        });
-    }
+    enemiesAlive.forEach(enemy => {
+        const dmg = combo.damage();
+        enemy.hp = Math.max(0, enemy.hp - dmg);
+        log(`${enemy.name} に ${dmg} ダメージ！`);
+    });
 
     updateDisplay();
     checkEnd();
-    isPlayerTurn = false;
-    nextTurn();
 }
 
-document.querySelectorAll(".special-button").forEach(btn => {
-    btn.addEventListener("click", playerSkill);
+window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("characterSelect").addEventListener("change", checkComboSelection);
 });
 
-function updateSpecialButtonsState() {
-    players.forEach(p => {
-        const btn = document.getElementById(`${p.type}-special`);
-        if (btn) {
-            btn.disabled = p.hp <= 0;
-        }
-    });
+// フラッシュ発動
+function showFlashEffect() {
+    console.log("フラッシュ！")
+    const flash = document.createElement("div");
+    flash.className = "screen-flash";
+    document.body.appendChild(flash);
+
+    setTimeout(() => {
+        flash.remove();
+    }, 300); // 0.3秒後に削除
 }
+
+// function skyPrismCombo() {
+//     playComboSequence(() => {
+//         showFlashEffect();
+//         setTimeout(() => {
+//             triggerComboSkill("sky_prism");
+//         }, 1000);
+//     });
+// }
+
+// function wingButterflyCombo() {
+//     playComboSequence(() => {
+//         showFlashEffect();
+//         setTimeout(() => {
+//             triggerComboSkill("wing_butterfly");
+//         }, 1000);
+//     });
+// }
 
 // 終了チェック
 function checkEnd() {
@@ -464,11 +618,11 @@ function displaySessionLogs() {
 }
 
 function restartGame() {
-    document.getElementById("playerInput").value = "";
+    // document.getElementById("playerInput").value = "";
     // 戦闘ログを空にする
     battleLogLive = [];
     document.getElementById("battleLog").value = "";
-    // Select2 の選択状態を解除
+    // Select2の選択状態を解除
     $('#characterSelect').val(null).trigger('change');
 
     showSection(["startMenu", "precureImg"]);
@@ -484,22 +638,6 @@ function setupInputEnterKey() {
     document.getElementById("playerInput").addEventListener("keydown", e => {
         if (e.key === "Enter") startGame();
     });
-}
-
-function getAttackDamage(base) {
-    const crit = Math.random() < 0.05;
-    let min = 15;
-    let max = base;
-
-    if (base < min) {
-        min = base;
-    }
-
-    const dmg = Math.floor(Math.random() * (max - min + 1)) + min;
-    const finalDmg = crit ? Math.floor(dmg * 1.8) : dmg;
-
-    if (crit) log("⚡ 会心の一撃！");
-    return finalDmg;
 }
 
 // ログ保存

@@ -56,14 +56,6 @@
             <div class="statusArea">
 
                 <div class="statusBox" id="playerStatusContainer">
-
-                    <div class="playerStatus">
-                        <img id="characterImagePlayer" src="" alt="キャラ画像"
-                            style="max-height: 120px; display: none; width: 100px;" />
-                        <div class="hp-bar">
-                            <div id="playerHPBar" class="bar-fill high" style="width: 100%;">100%</div>
-                        </div>
-                    </div>
                 </div>
                 <div class="statusBox" id="enemyStatusContainer">
                     <p>
@@ -80,6 +72,7 @@
                     </div>
                 </div>
             </div>
+            <!-- <div id="comboEffectOverlay" style="display: none;"></div> -->
 
             <!-- プレイヤーが選択 -->
             <div id="commandButtons">
@@ -87,11 +80,18 @@
                 <button onclick="defendAction()">防御する</button>
                 <button id="potionButton" onclick="usePotion()">ポーション</button>
 
-                <button id="sky-special" class="special-button">必殺技：ヒーローガールスカイパンチ</button>
+                <button id="combo-sky-prism" onclick="skyPrismCombo()" style="display:none;">
+                    合体技：アップドラフト・シャイニング
+                </button>
+                <button id="combo-wing-butterfly" onclick="wingButterflyCombo()" style="display:none;">
+                    合体技：タイタニック・レインボー
+                </button>
+
+                <!-- <button id="sky-special" class="special-button">必殺技：ヒーローガールスカイパンチ</button>
                 <button id="prism-special" class="special-button">必殺技：ヒーローガールプリズムショット</button>
                 <button id="wing-special" class="special-button">必殺技：ひろがるウイングアタック</button>
                 <button id="butterfly-special" class="special-button">必殺技：ひろがるバタフライプレス</button>
-                <button id="majesty-special" class="special-button">必殺技：ひろがるマジックアワーズエンド</button>
+                <button id="majesty-special" class="special-button">必殺技：ひろがるマジックアワーズエンド</button> -->
             </div>
         </div>
 
