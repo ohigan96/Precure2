@@ -5,14 +5,13 @@ let enemies = [];
 let battleLogLive = [];
 let sessionLogs = [];
 
-// let turnOrder = [];
-// let currentTurnIndex = 0;
 let isPlayerTurn = true;
 let gameEnded = false;
+let attackCount = 0;
 
 console.log(document.getElementById("playerNameLabel"));
 
-// キャラ選択時の表示切り替え
+// 表示切り替え
 function showSection(sectionIds) {
     const all = ["startMenu", "gameUI", "logPanel", "sessionLogPanel", "restartMenu", "instructionsPanel", "enemyListPanel", "characterListPanel", "precureImg"];
     all.forEach(id => {
@@ -38,7 +37,6 @@ function startGame() {
     ));
 
     enemies = generateEnemies(opts.length);
-
     battleLogLive = [];
     document.getElementById("battleLog").innerHTML = "";
 
@@ -49,7 +47,6 @@ function startGame() {
     if (label) {
         label.textContent = players[0].userName;
     }
-
 
     const classLabel = document.getElementById("charClassLabel");
 
@@ -68,11 +65,7 @@ function startGame() {
             .map(o => nameMap[o.value] || "？？？")
             .join(" & ");
     }
-    // setupSpecialButtons(opts.map(o => o.value));
-
     gameEnded = false;
-    // setupTurnOrder();
-    // isPlayerTurn = players.includes(turnOrder[0]);
 }
 
 // 敵生成
@@ -85,8 +78,8 @@ function generateEnemies(n) {
 // キャラクター生成
 function getCharacterStatus(type, name) {
     const map = {
-        sky: [150, 50], prism: [90, 25], wing: [100, 45],
-        butterfly: [110, 30], majesty: [120, 65],
+        sky: [150, 50], prism: [100, 30], wing: [100, 45],
+        butterfly: [120, 35], majesty: [120, 60],
         elle: [60, 25], shalala: [300, 100]
     };
     const charNameMap = {
@@ -113,8 +106,8 @@ function getCharacterStatus(type, name) {
 
 function getEnemyTemplate(sel) {
     const map = {
-        カバトン: [80, 30], バッタモンダー: [100, 20], ミノトン: [130, 45],
-        カイゼリン: [90, 35], スキアヘッド: [250, 50], カイザー: [800, 80]
+        カバトン: [80, 30], バッタモンダー: [100, 20], ミノトン: [130, 40],
+        カイゼリン: [90, 35], スキアヘッド: [250, 40], カイザー: [1000, 20]
     };
     const [hp, att] = map[sel];
     return { name: sel, hp, maxHP: hp, attack: att };
@@ -158,11 +151,11 @@ function updateDisplay() {
         <p>${charName} HP: <span id="playerHP${i}">${pl.hp}</span></p>
         <div class="playerStatus">
             <div class="charContainer">
-                <img src="img/${pl.type}.png" width="80" height="80" id="charImg">
+                <img src="img/${pl.type}.png" id="charImg">
                 <div id="effectPlayer${i}" class="effect"></div>
             </div>
             <div class="hp-bar">
-                <div id="playerHPBar${i}" class="bar-fill high" style="width:100%">100%</div>
+                <div id="playerHPBar${i}" class="bar-fill high" style="width:100%"></div>
             </div>
         </div>`;
         }
@@ -176,11 +169,11 @@ function updateDisplay() {
         <p>${en.name} (敵) HP: <span id="enemyHP${i}">${en.hp}</span></p>
         <div class="enemyStatus">
           <div class="hp-barEnemy">
-            <div id="enemyHPBar${i}" class="bar-fill high" style="width:100%">100%</div>
+            <div id="enemyHPBar${i}" class="bar-fill high" style="width:100%"></div>
           </div>
           <div class="charContainer">
             <div id="effectEnemy${i}" class="effect"></div>
-            <img src="img/${en.name}.png" width="80" height="80" id="enemyImg">
+            <img src="img/${en.name}.png" id="enemyImg">
           </div>
         </div>`;
         }
@@ -191,15 +184,19 @@ function updateDisplay() {
         if (pl) updateBar(pl, `playerHPBar${i}`, `playerHP${i}`);
         if (en) updateBar(en, `enemyHPBar${i}`, `enemyHP${i}`);
     }
+    // 合体技
     checkComboSelection();
 }
 
-
+// hpバー
 function updateBar(ent, barId, textId) {
     const percent = Math.floor(ent.hp / ent.maxHP * 100);
     const bar = document.getElementById(barId);
     bar.style.width = percent + "%";
-    bar.textContent = percent + "%";
+    bar.textContent = "";
+
+    // bar.textContent = percent + "%";
+
     bar.classList.remove("high", "mid", "low");
     if (percent > 50) bar.classList.add("high");
     else if (percent > 20) bar.classList.add("mid");
@@ -245,7 +242,7 @@ function attackEntity(attacker, target, callback) {
     const effect = document.getElementById(effectId);
 
     if (effect) {
-        effect.innerHTML = `<img src="img/lighting.gif" alt="エフェクト" width="94" height="94"/>`;
+        effect.innerHTML = `<img src="img/lighting.gif" alt="エフェクト" width="80" height="80"/>`;
         setTimeout(() => {
             effect.innerHTML = "";
             setTimeout(() => {
@@ -259,11 +256,10 @@ function attackEntity(attacker, target, callback) {
     }
 }
 
-let lastAttackerSide = null;      // 前回の攻撃者（"player" or "enemy"）
-let consecutiveCount = 0;         // 同じ側が続いた回数
-
 function playerAttack() {
     if (gameEnded) return;
+
+    attackCount++; // ←ここでカウント増やす
 
     const isPlayerFirst = Math.random() < 0.5;
 
@@ -297,6 +293,7 @@ function getRandomAlive(list) {
     return alive[index];
 }
 
+// 防御処理
 function defendAction() {
     if (gameEnded) return;
 
@@ -307,16 +304,16 @@ function defendAction() {
     defender.defending = true;
     log(`🛡️ ${defender.name} は防御態勢に入った！`);
 
-    // 敵の攻撃（ランダムな敵が防御中のプレイヤーを攻撃）
+    // 敵の攻撃
     const attacker = getRandomAlive(enemies);
     if (!attacker) return;
 
     // 攻撃処理
     if (defender.defending) {
-        if (Math.random() < 0.3) {
-            // 防御成功 → 回復
-            const min = Math.floor(defender.maxHP * 0.15);
-            const max = Math.floor(defender.maxHP * 0.25);
+        if (Math.random() < 0.4) {
+            // 防御成功 → maxHPの20%〜30%の範囲でランダムに回復
+            const min = Math.floor(defender.maxHP * 0.20);
+            const max = Math.floor(defender.maxHP * 0.30);
             const healAmount = Math.floor(Math.random() * (max - min + 1)) + min;
             defender.hp = Math.min(defender.hp + healAmount, defender.maxHP);
 
@@ -331,7 +328,7 @@ function defendAction() {
             const effectId = `effectPlayer${players.indexOf(defender)}`;
             const effect = document.getElementById(effectId);
             if (effect) {
-                effect.innerHTML = `<img src="img/lighting.gif" alt="エフェクト" width="90" height="90"/>`;
+                effect.innerHTML = `<img src="img/lighting.gif" alt="エフェクト" width="80" height="80"/>`;
                 setTimeout(() => {
                     effect.innerHTML = "";
                     defender.defending = false;
@@ -342,7 +339,7 @@ function defendAction() {
             }
         }
 
-        // エフェクトがない・防御成功時の後処理
+        // 防御成功時の後処理
         defender.defending = false;
         setTimeout(() => {
             updateDisplay();
@@ -362,73 +359,88 @@ function usePotion() {
         if (!p.potionUsed && p.hp > 0) {
             p.hp = Math.min(p.maxHP, p.hp + 25);
             p.potionUsed = true;
-            log(`${p.name} はポーション使用！ HPが25増えた！`);
+            log(`${p.name} はポーション使用！`);
+
             document.getElementById("potionButton").disabled = true;
         }
     });
-    // setTimeout(playerAttack, 600);
     updateDisplay();
     // プレイヤーのターンを終了し、次のターンへ
     isPlayerTurn = false;
 }
 
+// 特定の二人を選択したら合体技のボタン出す
+// function checkComboSelection() {
+//     console.log("checkComboSelection() called, attackCount =", attackCount);
+
+//     if (attackCount < 3) {
+//         // 3回未満なら合体技ボタンを非表示
+//         document.getElementById("combo-sky-prism").classList.add("hidden");
+//         document.getElementById("combo-wing-butterfly").classList.add("hidden");
+//         return;
+//     }
+
+//     const select = document.getElementById("characterSelect");
+//     const selectedTypes = Array.from(select.selectedOptions).map(opt => opt.value);
+
+//     const showSkyPrism = selectedTypes.includes("sky") && selectedTypes.includes("prism");
+//     const showWingButterfly = selectedTypes.includes("wing") && selectedTypes.includes("butterfly");
+
+//     const comboSky = document.getElementById("combo-sky-prism");
+//     const comboWing = document.getElementById("combo-wing-butterfly");
+
+//     if (showSkyPrism) {
+//         comboSky.classList.remove("hidden");
+//     } else {
+//         comboSky.classList.add("hidden");
+//     }
+
+//     if (showWingButterfly) {
+//         comboWing.classList.remove("hidden");
+//     } else {
+//         comboWing.classList.add("hidden");
+//     }
+// }
+
 function checkComboSelection() {
+    console.log("checkComboSelection() called, attackCount =", attackCount);
+
+    const comboSky = document.getElementById("combo-sky-prism");
+    const comboWing = document.getElementById("combo-wing-butterfly");
+
+    if (attackCount < 3) {
+        comboSky.classList.add("hidden");
+        comboWing.classList.add("hidden");
+        return;
+    }
+
     const select = document.getElementById("characterSelect");
     const selectedTypes = Array.from(select.selectedOptions).map(opt => opt.value);
 
-    const showSkyPrism = selectedTypes.includes("sky") && selectedTypes.includes("prism");
-    const showWingButterfly = selectedTypes.includes("wing") && selectedTypes.includes("butterfly");
+    const showSkyPrism =
+        selectedTypes.includes("sky") &&
+        selectedTypes.includes("prism") &&
+        players.some(p => p.type === "sky" && p.hp > 0) &&
+        players.some(p => p.type === "prism" && p.hp > 0);
 
-    document.getElementById("combo-sky-prism").style.display = showSkyPrism ? "inline-block" : "none";
-    document.getElementById("combo-wing-butterfly").style.display = showWingButterfly ? "inline-block" : "none";
+    const showWingButterfly =
+        selectedTypes.includes("wing") &&
+        selectedTypes.includes("butterfly") &&
+        players.some(p => p.type === "wing" && p.hp > 0) &&
+        players.some(p => p.type === "butterfly" && p.hp > 0);
+
+    if (showSkyPrism) {
+        comboSky.classList.remove("hidden");
+    } else {
+        comboSky.classList.add("hidden");
+    }
+
+    if (showWingButterfly) {
+        comboWing.classList.remove("hidden");
+    } else {
+        comboWing.classList.add("hidden");
+    }
 }
-
-// function skyPrismCombo() {
-//     const lines = [
-//         "💙 スカイブルー！",
-//         "🤍 プリズムホワイト！",
-//         "🌟 プリキュア・アップドラフト・シャイニング！！！"
-//     ];
-
-//     let idx = 0;
-
-//     function showNextLine() {
-//         if (idx < lines.length) {
-//             log(lines[idx]);
-//             idx++;
-//             setTimeout(showNextLine, 1000);
-//         } else {
-//             showFlashEffect(); // フラッシュ演出
-//             setTimeout(() => {
-//                 triggerComboSkill("sky_prism");
-//             }, 2000);
-//         }
-//     }
-
-//     showNextLine();
-// }
-
-// const lines = [
-//     "🎨 全ての色を1つに！ミックスパレット！",
-//     "🔴🟡🔵⚪ レッド！イエロー！ブルー！ホワイト！",
-//     "✨ まぜまぜカラーチャージ！"
-// ];
-
-// // セリフ表示
-// function showComboSequence(callback) {
-//     let idx = 0;
-
-//     function showNextLine() {
-//         if (idx < lines.length) {
-//             log(lines[idx]);
-//             idx++;
-//             setTimeout(showNextLine, 1000); // 1秒ごとに表示
-//         } else {
-//             callback(); // 全セリフ表示後に技発動
-//         }
-//     }
-//     showNextLine();
-// }
 
 function playComboSequence(lines, skillName) {
     let idx = 0;
@@ -445,24 +457,23 @@ function playComboSequence(lines, skillName) {
             }, 1000);
         }
     }
-
     showNextLine();
 }
 
-// スカイプリズムの演出
+// スカイとプリズムの演出
 const skyPrismLines = [
-    "💙 スカイブルー！",
+    "🩵 スカイブルー！",
     "🤍 プリズムホワイト！"
 ];
 function skyPrismCombo() {
     playComboSequence(skyPrismLines, "sky_prism");
 }
 
-// ミックスパレットの演出
+// ウイングとバタフライの演出
 const wingButterflyLines = [
     "🎨 全ての色を1つに！ミックスパレット！",
-    "🔴🟡🔵⚪ レッド！イエロー！ブルー！ホワイト！",
-    "✨ まぜまぜカラーチャージ！"
+    "❤️💛🩵🤍 レッド！イエロー！ブルー！ホワイト！",
+    "🖌️ まぜまぜカラーチャージ！"
 ];
 function wingButterflyCombo() {
     playComboSequence(wingButterflyLines, "wing_butterfly");
@@ -477,18 +488,30 @@ function triggerComboSkill(pairName) {
         "sky_prism": {
             members: ["sky", "prism"],
             skillName: "プリキュア・アップドラフト・シャイニング",
-            damage: () => Math.floor(Math.random() * 31) + 150, // 150〜180
+            damage: (enemy) => {
+                const base = Math.floor(Math.random() * 31) + 120; // 120〜150
+                if (enemy.hp > 400) return Math.floor(base * 5); // カイザー級には5倍
+                if (enemy.hp > 200) return Math.floor(base * 1.5); // スキアヘッド級には1.5倍
+                return base;
+            }
+
         },
         "wing_butterfly": {
             members: ["wing", "butterfly"],
             skillName: "プリキュア・タイタニック・レインボー",
-            damage: () => Math.floor(Math.random() * 31) + 150,
+            damage: (enemy) => {
+                const base = Math.floor(Math.random() * 31) + 150; // 120〜150
+                if (enemy.hp > 400) return Math.floor(base * 5); // カイザー級には4倍
+                if (enemy.hp > 200) return Math.floor(base * 1.5); // スキアヘッド級には1.5倍
+                return base;
+            }
         }
     };
 
     const combo = combos[pairName];
     if (!combo) return;
 
+    // どちらかが死んだ場合
     const activeMembers = combo.members.map(type => players.find(p => p.type === type && p.hp > 0));
     if (activeMembers.includes(undefined)) {
         log(`⚠️ 合体メンバーのどちらかが使用不能です！`);
@@ -498,10 +521,10 @@ function triggerComboSkill(pairName) {
     const enemiesAlive = enemies.filter(e => e.hp > 0);
     if (enemiesAlive.length === 0) return;
 
-    log(`🌈✨ ${combo.skillName} ！！`);
+    log(`✨ ${combo.skillName} ！！`);
 
     enemiesAlive.forEach(enemy => {
-        const dmg = combo.damage();
+        const dmg = combo.damage(enemy);
         enemy.hp = Math.max(0, enemy.hp - dmg);
         log(`${enemy.name} に ${dmg} ダメージ！`);
     });
@@ -525,24 +548,6 @@ function showFlashEffect() {
         flash.remove();
     }, 300); // 0.3秒後に削除
 }
-
-// function skyPrismCombo() {
-//     playComboSequence(() => {
-//         showFlashEffect();
-//         setTimeout(() => {
-//             triggerComboSkill("sky_prism");
-//         }, 1000);
-//     });
-// }
-
-// function wingButterflyCombo() {
-//     playComboSequence(() => {
-//         showFlashEffect();
-//         setTimeout(() => {
-//             triggerComboSkill("wing_butterfly");
-//         }, 1000);
-//     });
-// }
 
 // 終了チェック
 function checkEnd() {
@@ -628,6 +633,8 @@ function restartGame() {
     showSection(["startMenu", "precureImg"]);
     document.getElementById("potionButton").disabled = false;
     players.forEach(p => p.potionUsed = false);
+
+    attackCount = 0;
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -673,7 +680,7 @@ function showInstructions() {
 ◆ ゲーム操作の説明 ◆
 
 🔰 ゲームの流れ：
-1. 名前を入力して、好きなキャラクターを選びます。
+1. 名前を入力して、好きなキャラクターを1人～2人選びます。
 2. 「ゲーム開始」ボタンを押します。
 3. 敵がランダムに登場します。
 4. 下記の行動から選択してターンを進めます。
@@ -682,7 +689,7 @@ function showInstructions() {
 🗡 攻撃する：敵にダメージを与える。時々「会心の一撃」で大ダメージ！
 🛡 防御する：敵の攻撃を避けやすくなり、回避成功時は少し回復します。
 🥝 ポーション：HPが20回復（1回のみ使用可能）
-👊🏻 必殺技：プリキュアのみ表示される。
+👊🏻 合体技：特定のプリキュア2人を選択したときのみ表示される。
 
 👾 敵の行動：
 敵は毎ターン攻撃を仕掛けてきます。
@@ -740,7 +747,7 @@ HP: 300 / 攻撃力: 80
 ただ一言唱えるだけでアンダーグ・エナジーを様々な形で行使できる。
 
 カイザー：
-HP: 1000 / 攻撃力: 100
+HP: 800 / 攻撃力: 100
 300年前におけるアンダーグ帝国の前代皇帝で、カイゼリンの父。
 「力が全て」を豪語する傲岸不遜な暴君。
 

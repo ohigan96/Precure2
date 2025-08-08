@@ -58,40 +58,21 @@
                 <div class="statusBox" id="playerStatusContainer">
                 </div>
                 <div class="statusBox" id="enemyStatusContainer">
-                    <p>
-                        <strong>👾 敵:</strong>
-                        <span id="enemyName"></span>
-                        HP: <span id="enemyHP"></span>
-                    </p>
-                    <div class="enemyStatus">
-                        <img id="characterImageEnemy" src="" alt="キャラ画像"
-                            style="max-height: 120px; display: none; width: 100px;" />
-                        <div class="hp-bar">
-                            <div id="enemyHPBar" class="bar-fill high" style="width: 100%;">100%</div>
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
-            <!-- <div id="comboEffectOverlay" style="display: none;"></div> -->
-
             <!-- プレイヤーが選択 -->
             <div id="commandButtons">
                 <button onclick="playerAttack()">攻撃する</button>
                 <button onclick="defendAction()">防御する</button>
                 <button id="potionButton" onclick="usePotion()">ポーション</button>
 
-                <button id="combo-sky-prism" onclick="skyPrismCombo()" style="display:none;">
+                <button id="combo-sky-prism" onclick="skyPrismCombo()" class="hidden">
                     合体技：アップドラフト・シャイニング
                 </button>
-                <button id="combo-wing-butterfly" onclick="wingButterflyCombo()" style="display:none;">
+                <button id="combo-wing-butterfly" onclick="wingButterflyCombo()" class="hidden">
                     合体技：タイタニック・レインボー
                 </button>
-
-                <!-- <button id="sky-special" class="special-button">必殺技：ヒーローガールスカイパンチ</button>
-                <button id="prism-special" class="special-button">必殺技：ヒーローガールプリズムショット</button>
-                <button id="wing-special" class="special-button">必殺技：ひろがるウイングアタック</button>
-                <button id="butterfly-special" class="special-button">必殺技：ひろがるバタフライプレス</button>
-                <button id="majesty-special" class="special-button">必殺技：ひろがるマジックアワーズエンド</button> -->
             </div>
         </div>
 
@@ -121,5 +102,26 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="script.js"></script>
 </body>
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyDzxmINbXaSjXAfmA1tEv3vaA84X_hYroA",
+        authDomain: "precurebattle.firebaseapp.com",
+        projectId: "precurebattle",
+        storageBucket: "precurebattle.firebasestorage.app",
+        messagingSenderId: "750201411119",
+        appId: "1:750201411119:web:d7e7809008057c013158da"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    console.log("Firebase initialized:", app);
+</script>
 
 </html>

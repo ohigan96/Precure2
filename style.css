@@ -1,3 +1,28 @@
+.hp-barEnemy {
+    width: 90%;
+    max-width: 300px;
+    margin-left: auto;
+    /* margin-right: 20px; */
+    background-color: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.hp-barEnemy .bar-fill {
+    transform-origin: right;
+    margin: 0;
+    padding: 0;
+    height: 20px;
+    line-height: 30px;
+    text-align: center;
+    width: 100%;
+}
+
 #characterSl {
     font-size: 14px;
     padding-bottom: 16px;
@@ -6,17 +31,6 @@
 .select2-container {
     font-size: 12px !important;
     line-height: 1.2 !important;
-}
-
-.hp-barEnemy {
-    /* direction: ltr; */
-    width: 90%;
-    max-width: 300px;
-    margin-right: 20px auto;
-    flex-grow: 1;
-    background-color: #ddd;
-    border-radius: 5px;
-    overflow: hidden;
 }
 
 #titleImg {
@@ -46,7 +60,6 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    /* align-items: center; */
 }
 
 h4 {
@@ -58,7 +71,6 @@ body {
     background-size: 100% 240%;
     /* 縦横ともにぴったりにする */
     background-repeat: no-repeat;
-    /* background-color: #f4f4f4; */
     font-family: 'Kosugi Maru', sans-serif;
     padding-top: 16px;
     padding-left: 120px;
@@ -144,12 +156,13 @@ input {
 }
 
 .bar-fill {
+    height: 20px;
     border-radius: 5px;
     text-align: center;
-    color: #ffffff;
+    /* color: #ffffff;
     line-height: 30px;
     font-weight: bold;
-    transition: width 0.3s, background-color 0.3s;
+    transition: width 0.3s, background-color 0.3s; */
 }
 
 .hp-bar {
@@ -162,7 +175,6 @@ input {
     border-radius: 5px;
     overflow: hidden;
 }
-
 
 #sessionLogPanel,
 #instructionsPanel,
@@ -376,6 +388,20 @@ body {
     }
 }
 
+.hidden {
+    display: none !important;
+}
+
+#charImg {
+    width: 80px;
+    height: 80px;
+}
+
+#enemyImg {
+    width: 80px;
+    height: 80px;
+}
+
 /* スマホ向け（幅が768px以下の時） */
 @media screen and (max-width: 768px) {
 
@@ -398,11 +424,6 @@ body {
         width: 100%;
     }
 
-    /* #precureImg { */
-    /* display: none !important; */
-    /* position: absolute; left: -9999px; */
-    /* } */
-
     #precureImg {
         width: 80%;
         margin: 10px 40px 10px 40px;
@@ -414,8 +435,6 @@ body {
     #titleImg {
         height: 60px;
         width: 86px;
-        /* padding-top: 20px;
-        vertical-align: middle; */
     }
 
     h1 {
@@ -466,26 +485,8 @@ body {
         padding: 16px;
     }
 
-    .title-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        /* 左右に配置 */
-        flex-wrap: wrap;
-        /* 画面が狭い時に折り返す */
-        gap: 10px;
-        margin-bottom: 5px;
-    }
-
-    .title-row h4 {
-        margin: 0;
-        font-size: 1.1em;
-    }
-
-    .title-row button {
-        font-size: 0.9em;
-        padding: 4px 10px;
-        cursor: pointer;
+    h4 {
+        margin: 0 16px 4px 16px;
     }
 
     .log-header {
@@ -498,15 +499,14 @@ body {
         /* 縦並びに切り替え */
     }
 
-    #gameUI,
-    #logPanel {
-        padding: 10px;
+    #gameUI {
+        padding: 4px 10px 0 10px;
         width: 100%;
     }
 
     #logPanel {
-        width: 120%;
-        padding: 10px;
+        width: 100%;
+        padding: 0 20px;
         box-sizing: border-box;
         text-align: left;
     }
@@ -515,22 +515,20 @@ body {
         text-align: left;
     }
 
+    .logBox {
+        width: 100%;
+        text-align: left;
+        max-height: 100px;
+    }
+
     #gameUI button {
         display: block;
         width: 90%;
         margin: 8px auto;
     }
 
-    #logPanel {
-        margin: 0 30px 0 14px;
-    }
-
-    .logBox {
-        text-align: left;
-    }
-
     #sessionLogPanel {
-        padding: 20px;
+        padding: 0 20px;
     }
 
     .special-button {
@@ -560,13 +558,33 @@ body {
         flex-direction: column;
     }
 
+    .charContainer {
+        width: 50px;
+        height: 50px;
+    }
+
     #charImg {
-        width: 60;
-        height: 60;
+        width: 50px;
+        height: 50px;
     }
 
     #enemyImg {
-        width: 60;
-        height: 60;
+        width: 50px;
+        height: 50px;
+    }
+
+    .containerGame {
+        gap: 4px;
+    }
+
+    #combo-sky-prism,
+    #combo-wing-butterfly {
+        display: block;
+        width: 90%;
+        margin: 8px auto;
+    }
+
+    #sessionLogPanel pre {
+        padding: 14px 4px;
     }
 }
